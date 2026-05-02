@@ -1,0 +1,13 @@
+{
+  "name": "yutaura-marketplace",
+  "owner": {
+    "name": "yutaura"
+  },
+  "plugins": [
+    {
+      "name": "yutaura-toolkit",
+      "source": "./plugins/yutaura-toolkit",
+      "description": "yutaura's personal Claude Code toolkit (skills, and optionally agents / commands / hooks)."
+    }
+  ]
+}

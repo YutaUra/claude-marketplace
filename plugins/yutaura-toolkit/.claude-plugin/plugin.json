@@ -1,0 +1,8 @@
+{
+  "name": "yutaura-toolkit",
+  "version": "0.1.0",
+  "description": "yutaura's personal Claude Code toolkit. Currently bundles skills (tuning / claude-code-rules / repo-kickoff / decision-council / playwright-cli). Will grow to include agents and commands as needed.",
+  "author": {
+    "name": "yutaura"
+  }
+}
