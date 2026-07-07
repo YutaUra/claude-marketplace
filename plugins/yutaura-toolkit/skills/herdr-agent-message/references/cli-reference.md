@@ -70,6 +70,8 @@ herdr pane run <pane_id> <command>
 
 `<command>` として渡したテキストを入力し、**Enter まで原子的に実行** する。エージェント宛てなら「メッセージ投入 + submit」が 1 コマンドで完結し、enter 忘れが構造的に起きない。
 
+> **入力欄への「追記」挙動に注意（実地知見）**: `pane run` / `agent send` は入力欄を空にしてから書くのではなく、**既存の入力に追記**する。相手の pane に人間の**打ちかけ下書き**が残っていると、こちらの本文が連結されて**下書きごと submit**される（相手の入力破壊 + 本文混入）。送信の直前に `pane read --source visible` で **入力欄が空 × 通常プロンプト受付中（`Enter to select` 等の選択メニュー / 権限ダイアログでない）** を確認する。下書きを `ctrl+u` 等で消すのは相手の入力破壊なので不可。空くまで待つ。
+
 ### `pane send-text` / `pane send-keys`
 
 - `send-text`: テキストのみ投入（Enter しない）。`agent send` の pane 版に相当。
@@ -102,7 +104,8 @@ herdr workspace list
 herdr agent list
 herdr workspace list
 
-# 2. 送信（主推奨）
+# 2. 送信前ガード（入力欄が空 × プロンプト受付中か）→ 送信（主推奨）
+herdr pane read <相手pane> --source visible --lines 8       # ❯ の後ろが空でメニュー状態でないことを確認
 herdr pane run <相手pane> "<自己完結メッセージ + 返信手順>"
 
 #    代替（宛先を名前で / 段階投入したいとき）
