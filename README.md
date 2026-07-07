@@ -16,6 +16,7 @@
 | `repo-kickoff` | 新規リポジトリ立ち上げ時の README / docs / CLAUDE.md 整備 |
 | `decision-council` | 重要な意思決定を複数役のエージェントで多角検証 |
 | `playwright-cli` | `playwright-cli` を使ったブラウザ自動操作 |
+| `herdr-agent-message` | herdr で別 workspace / pane の Claude Code に依頼し返信を受け取る |
 
 ## 使い方
 
@@ -86,6 +87,7 @@ auto-update を有効にしない場合、または即時反映したい場合:
 │       └── skills/
 │           ├── claude-code-rules/
 │           ├── decision-council/
+│           ├── herdr-agent-message/
 │           ├── playwright-cli/
 │           ├── repo-kickoff/
 │           └── tuning/
