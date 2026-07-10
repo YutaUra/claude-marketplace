@@ -70,7 +70,7 @@ herdr pane run <pane_id> <command>
 
 `<command>` として渡したテキストを入力し、**Enter まで原子的に実行** する。エージェント宛てなら「メッセージ投入 + submit」が 1 コマンドで完結し、enter 忘れが構造的に起きない。
 
-> **入力欄への「追記」挙動に注意（実地知見）**: `pane run` / `agent send` は入力欄を空にしてから書くのではなく、**既存の入力に追記**する。相手の pane に人間の**打ちかけ下書き**が残っていると、こちらの本文が連結されて**下書きごと submit**される（相手の入力破壊 + 本文混入）。送信の直前に `pane read --source visible` で **入力欄が空 × 通常プロンプト受付中（`Enter to select` 等の選択メニュー / 権限ダイアログでない）** を確認する。下書きを `ctrl+u` 等で消すのは相手の入力破壊なので不可。空くまで待つ。
+> **入力欄への「追記」挙動に注意（実地知見）**: `pane run` / `agent send` は入力欄を空にしてから書くのではなく、**既存の入力に追記**する。相手の pane に人間の**打ちかけ下書き**が残っていると、こちらの本文が連結されて**下書きごと submit**される（相手の入力破壊 + 本文混入）。送信の直前に `pane read --source visible --ansi` で **入力欄が空 × 通常プロンプト受付中（`Enter to select` 等の選択メニュー / 権限ダイアログでない）** を確認する（`--ansi` 必須の理由は下記 `pane read` 参照）。下書きを `ctrl+u` 等で消すのは相手の入力破壊なので不可。空くまで待つ。
 
 ### `pane send-text` / `pane send-keys`
 
@@ -89,6 +89,59 @@ herdr pane run <pane_id> <command>
 
 `--lines N` で行数指定、`--format ansi` / `--ansi` で色付き取得。
 
+#### 送信前ガードでは `--ansi` 必須（placeholder 誤検出の回避）
+
+プレーンな `pane read`（`--format text`）は **色・文字属性を捨てて文字列だけを返す**。そのため入力欄の `❯` の後ろに出る **placeholder（ghost / ヒント文字）** と、人間が打った **実入力の下書き** が**同じ文字列に見え、区別できない**。プレーン read だけで空判定すると、faint 描画の placeholder を「打ちかけ下書き」と**誤検出**して送信を不当に保留する（実地の事故あり）。
+
+**判別法（`--ansi` で SGR を残して見る／実測 2 件で確定）**:
+
+- **placeholder** は **faint（dim）= `ESC[2m`（SGR 2、バイト列 `1b 5b 32 6d`）** で描画される。
+- **実入力** は明示 truecolor（例: `38;2;255;255;255` の白）で **faint が付かない**。
+- 判定は「RGB が白か」の閾値より **faint 属性の有無** を見る方が正確。
+
+| `❯` の後ろの状態 | 意味 | 送信 |
+| --- | --- | --- |
+| テキスト無し | 空 | 送ってよい |
+| faint（`ESC[2m`）付きの可視テキスト | placeholder | 送ってよい |
+| faint 無しの可視テキスト | 実下書き | HOLD（送らない） |
+
+> ⚠️ **実装の落とし穴（stdin 二重取り）**: `--ansi` 出力を parse するとき、`herdr pane read … --ansi | python3 - <<'EOF' … EOF` のように **パイプ入力とヒアドキュメントを同時に使うと、両方が stdin を奪って壊れる**。`--ansi` 出力を**いったんファイルへ書き出し**、python 側は `sys.argv` のファイルパスから読むこと。
+>
+> ```bash
+> herdr pane read <pane> --source visible --lines 8 --ansi > /tmp/pane.ansi
+> python3 detect_placeholder.py /tmp/pane.ansi   # ファイルパスは sys.argv[1] から読む
+> ```
+
+##### 判定スニペット（`guard.py`）
+
+`--ansi` 出力をファイル経由で受け取り、上の判定表をそのまま実装したもの（検証済み: 空 / placeholder / 実下書きの 3 ケースで期待通り）。**exit 0 = 送ってよい / exit 1 = HOLD**。
+
+```bash
+herdr pane read <pane> --source visible --lines 12 --ansi > /tmp/guard.txt
+python3 guard.py /tmp/guard.txt   # exit 0=送ってよい / exit 1=HOLD
+```
+
+```python
+import re, sys
+raw = open(sys.argv[1], encoding="utf-8", errors="replace").read()
+cand = [l for l in raw.split("\n") if "❯" in l]   # 入力プロンプト行
+if not cand:
+    print("NO_PROMPT -> HOLD"); sys.exit(1)
+seg = cand[-1].split("❯", 1)[1]                    # ❯ の後ろ = 入力内容
+text = re.sub(r"\x1b\[[0-9;]*m", "", seg).replace("\xa0", " ").strip()
+if not text:
+    print("EMPTY -> SAFE"); sys.exit(0)            # 空 -> 送ってよい
+if "\x1b[2m" in seg:                                # SGR 2 = faint = placeholder
+    print(f"PLACEHOLDER({text!r}) -> SAFE"); sys.exit(0)
+print(f"REAL_DRAFT({text!r}) -> HOLD"); sys.exit(1) # faint 無しの可視テキスト = 実下書き
+```
+
+要点:
+
+- `seg`（SGR 除去前）に対して `\x1b[2m` を検査する。属性を落とした `text` では faint 判定ができないため、**判定は必ず raw な `seg` で**行う。
+- `.replace("\xa0", " ")` は入力欄の余白が **NBSP（`\xa0`）** で埋められるケースの空判定漏れを防ぐ。
+- 複数プロンプト行があるときは **最後の `❯` 行**（`cand[-1]`）を採る＝現在の入力欄。
+
 ## workspace サブコマンド
 
 ```
@@ -105,7 +158,7 @@ herdr agent list
 herdr workspace list
 
 # 2. 送信前ガード（入力欄が空 × プロンプト受付中か）→ 送信（主推奨）
-herdr pane read <相手pane> --source visible --lines 8       # ❯ の後ろが空でメニュー状態でないことを確認
+herdr pane read <相手pane> --source visible --lines 8 --ansi  # --ansi 必須。❯ の後ろが空 or faint な placeholder のみ、かつメニュー状態でないことを確認
 herdr pane run <相手pane> "<自己完結メッセージ + 返信手順>"
 
 #    代替（宛先を名前で / 段階投入したいとき）
