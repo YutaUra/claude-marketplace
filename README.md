@@ -18,6 +18,7 @@
 | `playwright-cli` | `playwright-cli` を使ったブラウザ自動操作 |
 | `herdr-agent-message` | herdr で別 workspace / pane の Claude Code に依頼し返信を受け取る |
 | `gh-stack` | stacked branches / PR を `gh stack` CLI 拡張で管理（[github/gh-stack](https://github.com/github/gh-stack) v0.0.9 から vendor） |
+| `keepa-price-history` | keepa.com の内部 WebSocket 通信を傍受して Amazon 価格履歴を無料取得（個人利用・低頻度専用） |
 
 ## 使い方
 
