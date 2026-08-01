@@ -7,7 +7,7 @@
 
 ### `yutaura-toolkit`
 
-現状は skills のみ。今後 agents / commands / hooks も必要に応じて追加する。
+skills と agents を含む。今後 commands / hooks も必要に応じて追加する。
 
 | Skill | 概要 |
 | --- | --- |
@@ -19,6 +19,21 @@
 | `herdr-agent-message` | herdr で別 workspace / pane の Claude Code に依頼し返信を受け取る |
 | `gh-stack` | stacked branches / PR を `gh stack` CLI 拡張で管理（[github/gh-stack](https://github.com/github/gh-stack) v0.0.9 から vendor） |
 | `keepa-price-history` | keepa.com の内部 WebSocket 通信を傍受して Amazon 価格履歴を無料取得（個人利用・低頻度専用） |
+| `webapp-review` | Web アプリの変更を専門レビュワー agent 群で多角レビュー（diff 分析 → 該当観点のみ並列起動 → 統合レポート） |
+
+| Agent | レビュー観点 |
+| --- | --- |
+| `db-design-reviewer` | DB スキーマ・インデックス・マイグレーション安全性 |
+| `api-design-reviewer` | API 契約・破壊的変更・入出力の堅牢性・Webhook |
+| `authn-reviewer` | 認証（パスワード・セッション・トークン・OAuth/MFA） |
+| `authz-reviewer` | 認可（IDOR・テナント分離・権限昇格） |
+| `payment-reviewer` | 決済・課金（冪等性・Webhook 署名・金額計算・サブスク） |
+| `security-reviewer` | セキュリティ全般（OWASP Top 10 ベース） |
+| `concurrency-reviewer` | 並行性・トランザクション・非同期ジョブの整合性 |
+| `performance-reviewer` | N+1・大量データ・キャッシュ・スケーラビリティ |
+| `sre-reviewer` | 可観測性・障害の局所化・デプロイ安全性 |
+| `legal-reviewer` | 法務（個人情報・特商法・資金決済法・OSS ライセンス）— 要法務確認箇所の検知器 |
+| `marketing-reviewer` | SEO/OGP・計測トラッキング・転換導線 |
 
 ## 使い方
 
@@ -86,6 +101,7 @@ auto-update を有効にしない場合、または即時反映したい場合:
 │   └── yutaura-toolkit/
 │       ├── .claude-plugin/
 │       │   └── plugin.json
+│       ├── agents/                      # webapp-review 用の専門レビュワー群
 │       └── skills/
 │           ├── claude-code-rules/
 │           ├── decision-council/
@@ -93,7 +109,8 @@ auto-update を有効にしない場合、または即時反映したい場合:
 │           ├── herdr-agent-message/
 │           ├── playwright-cli/
 │           ├── repo-kickoff/
-│           └── tuning/
+│           ├── tuning/
+│           └── webapp-review/
 └── rules/                              # nix-darwin から fetch される
     ├── tdd-guidelines.md
     └── documentation-principles.md
