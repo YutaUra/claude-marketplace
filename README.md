@@ -17,6 +17,7 @@
 | `decision-council` | 重要な意思決定を複数役のエージェントで多角検証 |
 | `playwright-cli` | `playwright-cli` を使ったブラウザ自動操作 |
 | `herdr-agent-message` | herdr で別 workspace / pane の Claude Code に依頼し返信を受け取る |
+| `gh-stack` | stacked branches / PR を `gh stack` CLI 拡張で管理（[github/gh-stack](https://github.com/github/gh-stack) v0.0.9 から vendor） |
 
 ## 使い方
 
@@ -87,6 +88,7 @@ auto-update を有効にしない場合、または即時反映したい場合:
 │       └── skills/
 │           ├── claude-code-rules/
 │           ├── decision-council/
+│           ├── gh-stack/                # github/gh-stack から vendor
 │           ├── herdr-agent-message/
 │           ├── playwright-cli/
 │           ├── repo-kickoff/
