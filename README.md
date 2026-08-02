@@ -31,6 +31,7 @@ skills と agents を含む。今後 commands / hooks も必要に応じて追�
 | `security-reviewer` | セキュリティ全般（OWASP Top 10 ベース） |
 | `concurrency-reviewer` | 並行性・トランザクション・非同期ジョブの整合性 |
 | `performance-reviewer` | N+1・大量データ・キャッシュ・スケーラビリティ |
+| `audit-trail-reviewer` | 監査証跡・履歴設計・台帳方式・イベントソーシング（最軽量手法から段階提案） |
 | `sre-reviewer` | 可観測性・障害の局所化・デプロイ安全性 |
 | `legal-reviewer` | 法務（個人情報・特商法・資金決済法・OSS ライセンス）— 要法務確認箇所の検知器 |
 | `marketing-reviewer` | SEO/OGP・計測トラッキング・転換導線 |

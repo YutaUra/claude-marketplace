@@ -1,7 +1,7 @@
 {
   "name": "yutaura-toolkit",
-  "version": "0.5.0",
-  "description": "yutaura's personal Claude Code toolkit. Bundles skills (tuning / claude-code-rules / repo-kickoff / decision-council / playwright-cli / herdr-agent-message / gh-stack / keepa-price-history / webapp-review) and webapp review agents (db-design / api-design / authn / authz / payment / security / concurrency / performance / sre / legal / marketing).",
+  "version": "0.5.1",
+  "description": "yutaura's personal Claude Code toolkit. Bundles skills (tuning / claude-code-rules / repo-kickoff / decision-council / playwright-cli / herdr-agent-message / gh-stack / keepa-price-history / webapp-review) and webapp review agents (db-design / api-design / authn / authz / payment / security / concurrency / performance / audit-trail / sre / legal / marketing).",
   "author": {
     "name": "yutaura"
   }
