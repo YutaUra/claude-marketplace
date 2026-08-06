@@ -41,10 +41,17 @@ esac
 
 marker="$git_dir/comment-cleanup-checked-$mode"
 
-# 前回このモードでブロック済みなら、今回は見直し済みとみなして通す
+# 前回このモードでブロック済みなら、今回は見直し済みとみなして通す。
+# ただし commit を取りやめた場合の残留 marker が後日の無関係な commit を
+# 素通りさせないよう、TTL (5分) を超えた marker は無効として再検査する
+TTL_SECONDS=300
 if [ -f "$marker" ]; then
+  mtime=$(stat -f %m "$marker" 2>/dev/null || stat -c %Y "$marker" 2>/dev/null || echo 0)
+  now=$(date +%s)
   rm -f "$marker"
-  exit 0
+  if [ $((now - mtime)) -le "$TTL_SECONDS" ]; then
+    exit 0
+  fi
 fi
 
 # 対象 diff を取得。markdown はコメント検出の対象外
@@ -78,6 +85,7 @@ cat >&2 <<EOF
 ${mode} の前に comment-cleanup skill（yutaura-toolkit:comment-cleanup）を invoke し、
 その基準に従って無価値なコメント（動作をなぞるだけ / 変更説明 / ナレーション等）を削除してください。
 Why not コメント・ディレクティブ・ライセンスヘッダ等の価値あるコメントは残して構いません。
-見直しが完了したら、同じ git ${mode} コマンドを再実行してください（次回はブロックされません）。
+見直しが完了したら、同じ git ${mode} コマンドを再実行してください。
+コメントに問題がない（すべて残す価値がある）場合も、そのまま再実行すれば許可されます（5分以内）。
 EOF
 exit 2
