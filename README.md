@@ -7,7 +7,7 @@
 
 ### `yutaura-toolkit`
 
-skills と agents を含む。今後 commands / hooks も必要に応じて追加する。
+skills / agents / hooks を含む。今後 commands も必要に応じて追加する。
 
 | Skill | 概要 |
 | --- | --- |
@@ -20,6 +20,11 @@ skills と agents を含む。今後 commands / hooks も必要に応じて追�
 | `gh-stack` | stacked branches / PR を `gh stack` CLI 拡張で管理（[github/gh-stack](https://github.com/github/gh-stack) v0.0.9 から vendor） |
 | `keepa-price-history` | keepa.com の内部 WebSocket 通信を傍受して Amazon 価格履歴を無料取得（個人利用・低頻度専用） |
 | `webapp-review` | Web アプリの変更を専門レビュワー agent 群で多角レビュー（diff 分析 → 該当観点のみ並列起動 → 統合レポート） |
+| `comment-cleanup` | diff に追加された無価値なコードコメント（動作をなぞるだけ / 変更説明 / ナレーション等）を commit / push 前に削除。Why not コメント等は保持 |
+
+| Hook | 概要 |
+| --- | --- |
+| `check-comments.sh` (PreToolUse: Bash) | `git commit` / `git push` 実行前に diff の追加コメント行を検出したらブロックし、`comment-cleanup` skill での見直しを促す。ブロックは 1 回のみで、見直し後の再実行は通る |
 
 | Agent | レビュー観点 |
 | --- | --- |
@@ -103,8 +108,10 @@ auto-update を有効にしない場合、または即時反映したい場合:
 │       ├── .claude-plugin/
 │       │   └── plugin.json
 │       ├── agents/                      # webapp-review 用の専門レビュワー群
+│       ├── hooks/                       # hooks.json + check-comments.sh
 │       └── skills/
 │           ├── claude-code-rules/
+│           ├── comment-cleanup/
 │           ├── decision-council/
 │           ├── gh-stack/                # github/gh-stack から vendor
 │           ├── herdr-agent-message/
