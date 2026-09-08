@@ -22,6 +22,7 @@ skills / agents / hooks を含む。今後 commands も必要に応じて追加�
 | `webapp-review` | Web アプリの変更を専門レビュワー agent 群で多角レビュー（diff 分析 → 該当観点のみ並列起動 → 統合レポート） |
 | `comment-cleanup` | diff に追加された無価値なコードコメント（動作をなぞるだけ / 変更説明 / ナレーション等）を commit / push 前に削除。Why not コメント等は保持 |
 | `terraform-backend` | 個人リポジトリ（`YutaUra/*` / `yutaura-dev/*`）で Terraform / OpenTofu の state を共通 S3 バケットに集約する規約。key の組み立て方と、DynamoDB ロックテーブル等のアンチパターン |
+| `project-manager-mode` | ユーザーが product 側、Claude が project manager という分業で働く。調査は読み取り専用サブエージェントに本体ディレクトリで、修正は worktree を切って実装役に委譲。判断は「それ単体で決められる形」に整えて返し、完了時は未実施の検証まで含めた 5 点で報告する |
 
 | Hook | 概要 |
 | --- | --- |
@@ -117,6 +118,7 @@ auto-update を有効にしない場合、または即時反映したい場合:
 │           ├── gh-stack/                # github/gh-stack から vendor
 │           ├── herdr-agent-message/
 │           ├── playwright-cli/
+│           ├── project-manager-mode/
 │           ├── repo-kickoff/
 │           ├── terraform-backend/
 │           ├── tuning/
