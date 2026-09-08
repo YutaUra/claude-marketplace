@@ -21,6 +21,7 @@ skills / agents / hooks を含む。今後 commands も必要に応じて追加�
 | `keepa-price-history` | keepa.com の内部 WebSocket 通信を傍受して Amazon 価格履歴を無料取得（個人利用・低頻度専用） |
 | `webapp-review` | Web アプリの変更を専門レビュワー agent 群で多角レビュー（diff 分析 → 該当観点のみ並列起動 → 統合レポート） |
 | `comment-cleanup` | diff に追加された無価値なコードコメント（動作をなぞるだけ / 変更説明 / ナレーション等）を commit / push 前に削除。Why not コメント等は保持 |
+| `terraform-backend` | 個人リポジトリ（`YutaUra/*` / `yutaura-dev/*`）で Terraform / OpenTofu の state を共通 S3 バケットに集約する規約。key の組み立て方と、DynamoDB ロックテーブル等のアンチパターン |
 
 | Hook | 概要 |
 | --- | --- |
@@ -117,6 +118,7 @@ auto-update を有効にしない場合、または即時反映したい場合:
 │           ├── herdr-agent-message/
 │           ├── playwright-cli/
 │           ├── repo-kickoff/
+│           ├── terraform-backend/
 │           ├── tuning/
 │           └── webapp-review/
 └── rules/                              # nix-darwin から fetch される
