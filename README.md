@@ -16,12 +16,12 @@ skills / agents / hooks を含む。今後 commands も必要に応じて追加�
 | `repo-kickoff` | 新規リポジトリ立ち上げ時の README / docs / CLAUDE.md 整備 |
 | `decision-council` | 重要な意思決定を複数役のエージェントで多角検証 |
 | `playwright-cli` | `playwright-cli` を使ったブラウザ自動操作 |
-| `herdr-agent-message` | herdr で別 workspace / pane の Claude Code に依頼し返信を受け取る |
 | `gh-stack` | stacked branches / PR を `gh stack` CLI 拡張で管理（[github/gh-stack](https://github.com/github/gh-stack) v0.0.9 から vendor） |
 | `keepa-price-history` | keepa.com の内部 WebSocket 通信を傍受して Amazon 価格履歴を無料取得（個人利用・低頻度専用） |
 | `webapp-review` | Web アプリの変更を専門レビュワー agent 群で多角レビュー（diff 分析 → 該当観点のみ並列起動 → 統合レポート） |
 | `comment-cleanup` | diff に追加された無価値なコードコメント（動作をなぞるだけ / 変更説明 / ナレーション等）を commit / push 前に削除。Why not コメント等は保持 |
 | `terraform-backend` | 個人リポジトリ（`YutaUra/*` / `yutaura-dev/*`）で Terraform / OpenTofu の state を共通 S3 バケットに集約する規約。key の組み立て方と、DynamoDB ロックテーブル等のアンチパターン |
+| `project-manager-mode` | ユーザーが product 側、Claude が project manager という分業で働く。調査は読み取り専用サブエージェントに本体ディレクトリで、修正は worktree を切って実装役に委譲。判断は「それ単体で決められる形」に整えて返し、完了時は未実施の検証まで含めた 5 点で報告する |
 
 | Hook | 概要 |
 | --- | --- |
@@ -115,15 +115,18 @@ auto-update を有効にしない場合、または即時反映したい場合:
 │           ├── comment-cleanup/
 │           ├── decision-council/
 │           ├── gh-stack/                # github/gh-stack から vendor
-│           ├── herdr-agent-message/
 │           ├── playwright-cli/
+│           ├── project-manager-mode/
 │           ├── repo-kickoff/
 │           ├── terraform-backend/
 │           ├── tuning/
 │           └── webapp-review/
-└── rules/                              # nix-darwin から fetch される
-    ├── tdd-guidelines.md
-    └── documentation-principles.md
+├── rules/                              # nix-darwin から fetch される
+│   ├── tdd-guidelines.md
+│   └── documentation-principles.md
+└── archive/                            # 役目を終えた skill（配信対象外）
+    └── skills/
+        └── herdr-agent-message/
 ```
 
 将来 agents / commands 等を追加する場合は `plugins/yutaura-toolkit/` 直下に
