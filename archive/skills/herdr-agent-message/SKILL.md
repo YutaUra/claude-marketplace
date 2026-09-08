@@ -3,6 +3,15 @@ name: herdr-agent-message
 description: herdr で別 workspace / pane で動く独立した Claude Code エージェントに作業を依頼し、返信を受け取るための定型手順。宛先特定 → 自己完結メッセージ送信 → 進捗確認 → 返信受領を、herdr CLI（Bash 経由）で安全に実行する。特に「テキスト投入だけでは submit されない」2段階送信の落とし穴を構造的に回避する。Use when: (1) 「別のエージェントに依頼」「他の workspace / pane の agent にメッセージ」「herdr でエージェント間連携」と言われたとき、(2) 独立して動いている別セッションの Claude Code に作業を渡して結果を受け取りたいとき、(3) 複数 workspace のエージェントを協調させたいとき。同一セッション内の subagent 起動（Agent tool / SendMessage）には使わない。
 ---
 
+> **⚠️ この skill は archive 済み（配信対象外）**
+>
+> 本文中の「SendMessage は同一セッション内の subagent 専用で、別 pane には届かない」は
+> **現在は誤り**。Claude Code 公式の `ListAgents` / `SendMessage` が同一マシンの他ローカル
+> セッションを名前で直接アドレッシングできる。既存セッションへのメッセージングはそちらを使うこと。
+>
+> herdr CLI が依然必要なのは、セッションの**起動**（`herdr agent start`）、pane の focus / attach、
+> 中断（`send-keys ctrl+c`）など、メッセージング以外の pane 操作に限られる。
+
 # herdr Agent Messaging
 
 別の workspace / pane で動いている **独立した Claude Code セッション** に作業を依頼し、返信を受け取るための skill。herdr には Claude Code 専用ツールが無いため、すべて **Bash から `herdr` CLI を叩く** 運用になる。

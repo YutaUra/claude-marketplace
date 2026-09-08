@@ -16,7 +16,6 @@ skills / agents / hooks を含む。今後 commands も必要に応じて追加�
 | `repo-kickoff` | 新規リポジトリ立ち上げ時の README / docs / CLAUDE.md 整備 |
 | `decision-council` | 重要な意思決定を複数役のエージェントで多角検証 |
 | `playwright-cli` | `playwright-cli` を使ったブラウザ自動操作 |
-| `herdr-agent-message` | herdr で別 workspace / pane の Claude Code に依頼し返信を受け取る |
 | `gh-stack` | stacked branches / PR を `gh stack` CLI 拡張で管理（[github/gh-stack](https://github.com/github/gh-stack) v0.0.9 から vendor） |
 | `keepa-price-history` | keepa.com の内部 WebSocket 通信を傍受して Amazon 価格履歴を無料取得（個人利用・低頻度専用） |
 | `webapp-review` | Web アプリの変更を専門レビュワー agent 群で多角レビュー（diff 分析 → 該当観点のみ並列起動 → 統合レポート） |
@@ -116,16 +115,18 @@ auto-update を有効にしない場合、または即時反映したい場合:
 │           ├── comment-cleanup/
 │           ├── decision-council/
 │           ├── gh-stack/                # github/gh-stack から vendor
-│           ├── herdr-agent-message/
 │           ├── playwright-cli/
 │           ├── project-manager-mode/
 │           ├── repo-kickoff/
 │           ├── terraform-backend/
 │           ├── tuning/
 │           └── webapp-review/
-└── rules/                              # nix-darwin から fetch される
-    ├── tdd-guidelines.md
-    └── documentation-principles.md
+├── rules/                              # nix-darwin から fetch される
+│   ├── tdd-guidelines.md
+│   └── documentation-principles.md
+└── archive/                            # 役目を終えた skill（配信対象外）
+    └── skills/
+        └── herdr-agent-message/
 ```
 
 将来 agents / commands 等を追加する場合は `plugins/yutaura-toolkit/` 直下に
