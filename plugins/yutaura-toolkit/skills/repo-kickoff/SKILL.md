@@ -30,6 +30,10 @@ description: 新規リポジトリの立ち上げ時に、存在意義・スコ�
 ## 出力ファイル構成
 
 ```
+flake.nix / flake.lock           — 開発依存（言語ランタイム / CLI ツール）の固定
+.envrc                           — direnv: devShell 有効化 + .env 読み込み
+.env.example                     — 環境変数の雛形
+.worktreeinclude                 — worktree にコピーする gitignore 対象ファイル
 README.md                        — 外部向け要約 + 使い方（Stability: 🌊 living）
 CLAUDE.md                        — AI 協働の文脈情報（Stability: 🌊 living）
 docs/
@@ -113,7 +117,38 @@ ADR は **「アーキテクチャ上重要な決定」** を context / decision
 4. **AI 協働文脈は CLAUDE.md に集約**: ドメイン用語・触れてほしくない領域などは CLAUDE.md に
 5. **docs/README.md を生成**: 各 docs/ ファイルの役割と読む順序を案内
 
-### Step 6: ユーザー確認とコミット
+### Step 6: 開発環境 scaffold の生成
+
+文書だけでは「手元で動かすまで」が再現できない。以下の 3 領域は **ヒアリングせず既定の規約として固定で生成** する。
+
+| 対象 | 既定の手段 | 生成物 |
+|------|-----------|--------|
+| 依存管理（言語ランタイム / CLI ツール） | nix flake + direnv | `flake.nix`, `.envrc` |
+| 環境変数 | `.env`（非秘匿）/ `.env.local`（秘匿）を direnv が読む | `.env.example`, `.gitignore` 追記 |
+| worktree への持ち込み | `.worktreeinclude` | `.worktreeinclude` |
+
+**規約の中身**:
+
+- 依存はすべて `flake.nix` の `devShells.default` に集約する。グローバルインストール（`brew install` / `npm i -g`）に頼らない
+- `.envrc` は `use flake` で devShell を自動有効化し、`dotenv_if_exists` で `.env` → `.env.local` の順に読む
+- 環境差分の**非秘匿値**（ポート番号、クラウド CLI のプロファイル名など）は `.env`、**秘匿値**（API キー・トークン）は `.env.local`。どちらも gitignore し、commit するのは雛形の `.env.example` のみ
+- `.worktreeinclude` には `.env` / `.env.local` を必ず載せる。gitignore 対象ファイルは worktree にコピーされないため、書き忘れると worktree 側で開発が成立しない
+- `flake.nix` を書いたら `nix flake lock` で `flake.lock` を生成し、両方 commit する（lock が無いと版が固定されない）
+
+テンプレートは [references/output-templates.md](references/output-templates.md) の「開発環境 scaffold テンプレート」を使う。
+
+**既存スタック優先ルール**（唯一の分岐）:
+
+対象リポジトリに **既に代替手段が指定されている場合は、そちらに従い上記を生成しない**。代替とみなす例:
+
+- 依存管理: `mise.toml` / `.tool-versions` / `devbox.json` / `.devcontainer/` / Docker Compose のみで完結
+- 環境変数: 1Password CLI（`op run`）/ SOPS / Doppler など
+
+判定は「該当ファイルがリポジトリに既に存在するか」＋「視点 3.5 のヒアリングで明示されたか」で行う。判断がつかない場合はユーザーに確認する。
+
+`.worktreeinclude` は依存管理の選択と独立している。代替スタックを採用した場合も生成し、コピー対象を各スタックのローカル設定ファイルに読み替える。
+
+### Step 7: ユーザー確認とコミット
 
 1. 生成したファイル一覧と各ファイルの目的を要約して提示
 2. ユーザーが内容を確認して微調整
@@ -125,7 +160,7 @@ ADR は **「アーキテクチャ上重要な決定」** を context / decision
 |---|------|--------------|--------|
 | 1 | プロダクト・事業 (Why) | 存在意義 / 課題 / 想定ユーザー | `docs/charter.md` 🪨 |
 | 2 | スコープ (What) | やる / **やらないこと** / 隣接プロジェクトとの境界 | `docs/charter.md` 🪨 |
-| 3 | エンジニアリング (How) | 技術スタック / アーキテクチャ / 主要設計判断 | `docs/architecture.md` 🌊 |
+| 3 | エンジニアリング (How) | 技術スタック / アーキテクチャ / 主要設計判断 / **開発環境の再現手段** | `docs/architecture.md` 🌊 + 開発環境 scaffold（Step 6） |
 | 4 | 品質・運用 (Quality) | 非機能要件 / テスト / 監視 / デプロイ | `docs/architecture.md` 🌊 |
 | 5 | ロードマップ (When) | MVP / フェーズ / 完了条件 | `docs/plan.md` 🌀 |
 | 6 | 成功・撤退 (Success/Sunset) | KPI / 完了条件 / **撤退条件** | `docs/charter.md` 🪨 |
@@ -147,6 +182,7 @@ ADR は **「アーキテクチャ上重要な決定」** を context / decision
 - **「やらないこと」を聞き逃す**: 視点 2 の Out of Scope は最重要。明示的に質問する
 - **撤退条件を空欄で済ます**: 視点 6 の撤退条件は将来の判断に効く
 - **charter.md を ADR なしで書き換える**: 不変領域の変更は必ず ADR で履歴を残す
+- **既存の依存管理を無視して flake を足す**: mise / devcontainer 等が既にあるなら重複させない（Step 6 の既存スタック優先ルール）
 - **architecture.md と ADR で同じ決定を二重管理**: ADR は「決定の根拠」、architecture.md は「現状の構成」。ADR から architecture.md にリンクするだけにする
 
 ## 連携するスキル
