@@ -1,0 +1,8 @@
+{
+  "name": "yutaura-private",
+  "version": "0.1.0",
+  "description": "yutaura's private-profile Claude Code plugin. Bundles skills that depend on tooling only installed in the nix-darwin private profile (openai-decisions).",
+  "author": {
+    "name": "yutaura"
+  }
+}

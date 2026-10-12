@@ -5,6 +5,15 @@
 
 ## 含まれる plugin
 
+plugin は **2 本**ある。配信は plugin ごとに独立しており、有効化も version bump も別々に行う。
+
+| Plugin | 役割 | 有効化の前提 |
+| --- | --- | --- |
+| `yutaura-toolkit` | 汎用。どのマシンでも動く skills / agents / hooks | なし |
+| `yutaura-private` | nix-darwin の private プロファイルにしか入っていないツールに依存する skills | 該当ツールが PATH にあること |
+
+> `yutaura-private` の "private" は **「private プロファイル専用」** の意味で、機密情報という意味ではない。**このリポジトリは public** なので、どちらの plugin にも秘密情報は置かない。
+
 ### `yutaura-toolkit`
 
 skills / agents / hooks を含む。今後 commands も必要に応じて追加する。
@@ -43,6 +52,18 @@ skills / agents / hooks を含む。今後 commands も必要に応じて追加�
 | `legal-reviewer` | 法務（個人情報・特商法・資金決済法・OSS ライセンス）— 要法務確認箇所の検知器 |
 | `marketing-reviewer` | SEO/OGP・計測トラッキング・転換導線 |
 
+### `yutaura-private`
+
+nix-darwin の private プロファイル限定で導入しているツールに依存する skill を置く。
+依存ツールが入っていないマシンでは skill が機能しないため、`yutaura-toolkit` とは分けている。
+
+| Skill | 概要 |
+| --- | --- |
+| `openai-decisions` | OpenAI Decisions API（`openai-decisions/gpt-6-luna`）を `llm` CLI 経由で使い、テキスト / 画像の真偽・分類・段階評価を確率付きで判定する。中心は「chat モデルではなく decisions を選ぶ判断基準」と、確率を閾値運用するときの設計（`refusal` の fail closed / 低 confidence の扱い / 入力と質問の取り違え防止） |
+
+**依存**: `llm` 0.36 + `llm-openai-decisions` 0.1。nix-darwin 側の `pkgs/llm-with-decisions.nix` で自前パッケージ化している。
+site-packages が read-only なため **`llm install` は使えない**（skill 本文に明記済み）。
+
 ## 使い方
 
 ### marketplace を追加（初回のみ）
@@ -58,10 +79,13 @@ skills / agents / hooks を含む。今後 commands も必要に応じて追加�
 ```json
 {
   "enabledPlugins": {
-    "yutaura-toolkit@yutaura-marketplace": true
+    "yutaura-toolkit@yutaura-marketplace": true,
+    "yutaura-private@yutaura-marketplace": true
   }
 }
 ```
+
+`yutaura-private` は依存ツールが入っているマシンでのみ有効化する。
 
 ### Auto-update を有効にする
 
@@ -106,29 +130,35 @@ auto-update を有効にしない場合、または即時反映したい場合:
 ├── .claude-plugin/
 │   └── marketplace.json
 ├── plugins/
-│   └── yutaura-toolkit/
+│   ├── yutaura-toolkit/
+│   │   ├── .claude-plugin/
+│   │   │   └── plugin.json
+│   │   ├── agents/                      # webapp-review 用の専門レビュワー群
+│   │   ├── hooks/                       # hooks.json + check-comments.sh
+│   │   └── skills/
+│   │       ├── claude-code-rules/
+│   │       ├── comment-cleanup/
+│   │       ├── decision-council/
+│   │       ├── gh-stack/                # github/gh-stack から vendor
+│   │       ├── herdr-agent-message/
+│   │       ├── keepa-price-history/
+│   │       ├── playwright-cli/
+│   │       ├── project-manager-mode/
+│   │       ├── repo-kickoff/
+│   │       ├── terraform-backend/
+│   │       ├── tuning/
+│   │       └── webapp-review/
+│   └── yutaura-private/
 │       ├── .claude-plugin/
 │       │   └── plugin.json
-│       ├── agents/                      # webapp-review 用の専門レビュワー群
-│       ├── hooks/                       # hooks.json + check-comments.sh
 │       └── skills/
-│           ├── claude-code-rules/
-│           ├── comment-cleanup/
-│           ├── decision-council/
-│           ├── gh-stack/                # github/gh-stack から vendor
-│           ├── herdr-agent-message/
-│           ├── playwright-cli/
-│           ├── project-manager-mode/
-│           ├── repo-kickoff/
-│           ├── terraform-backend/
-│           ├── tuning/
-│           └── webapp-review/
+│           └── openai-decisions/
 └── rules/                              # nix-darwin から fetch される
     ├── tdd-guidelines.md
     └── documentation-principles.md
 ```
 
-将来 agents / commands 等を追加する場合は `plugins/yutaura-toolkit/` 直下に
+将来 agents / commands 等を追加する場合は、対象 plugin のディレクトリ直下に
 `agents/` `commands/` `hooks/` `.mcp.json` などを配置する。
 
 ## rules ディレクトリについて
@@ -148,7 +178,13 @@ auto-update を有効にしない場合、または即時反映したい場合:
 ## skill / plugin 更新時の手順
 
 1. 該当ファイル（`SKILL.md` 等）を編集
-2. `plugins/yutaura-toolkit/.claude-plugin/plugin.json` の `version` を bump
-3. commit & push
-4. 利用側は次回起動で自動反映（auto-update 有効時）。手動なら
+2. **変更した plugin の** `plugin.json` の `version` を bump
+   - `plugins/yutaura-toolkit/.claude-plugin/plugin.json`
+   - `plugins/yutaura-private/.claude-plugin/plugin.json`
+
+   両方の plugin を変更したなら**両方** bump する。片方だけ編集したときに
+   もう片方を bump する必要はない（配信は plugin ごとに独立）
+3. 新しい skill を追加したら、該当 plugin の skill 一覧テーブルを更新
+4. commit & push
+5. 利用側は次回起動で自動反映（auto-update 有効時）。手動なら
    `/plugin marketplace update yutaura-marketplace` → `/reload-plugins`
