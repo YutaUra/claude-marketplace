@@ -1,6 +1,9 @@
 ---
 name: keepa-price-history
-description: Keepa の有料 API を使わず、keepa.com サイト内部の WebSocket 通信を playwright-cli で傍受して Amazon 商品の価格履歴を無料取得する。Use when: (1) 「Amazon の価格履歴を調べて」「Keepa のデータが欲しい」「この ASIN の値動きを見たい」と言われたとき、(2) 商品の過去価格・売れ筋ランク推移を取得したいとき、(3) Keepa 取得が 401/403/checkHuman で壊れて復旧したいとき。個人利用・低頻度専用（非公式利用のため大量アクセス禁止）。
+description: >
+  Keepa の有料 API を使わず、keepa.com サイト内部の WebSocket 通信を playwright-cli で傍受して Amazon 商品の価格履歴を無料取得する。Use when:
+  (1) 「Amazon の価格履歴を調べて」「Keepa のデータが欲しい」「この ASIN の値動きを見たい」と言われたとき、(2) 商品の過去価格・売れ筋ランク推移を取得したいとき、(3)
+  Keepa 取得が 401/403/checkHuman で壊れて復旧したいとき。個人利用・低頻度専用（非公式利用のため大量アクセス禁止）。
 ---
 
 # Keepa 価格履歴の無料取得
