@@ -40,3 +40,9 @@ yutaura 個人用の Claude Code plugin marketplace。ビルド・テスト・li
 ⚠️ **bump するのは実際に変更した plugin だけ**。両方変更したなら両方 bump する。片方だけの変更でもう片方を bump するのは無意味な再配信になる。
 
 新しい skill を追加したら README.md の該当 plugin の skill 一覧テーブルも更新する。将来 agents / commands / hooks を追加する場合は、対象 plugin のディレクトリ直下に `agents/` `commands/` 等を配置する。
+
+## git ワークフロー
+
+個人用リポジトリなので **`main` へ直接 commit してよい**。レビューのためにブランチを切ったり PR を作ったりしない（レビュアーが自分しかおらず、オーバーヘッドに見合わない）。
+
+ただし **「ブランチを切らない」と「勝手に commit する」は別**。commit / push はユーザーに依頼されたときに行う。
