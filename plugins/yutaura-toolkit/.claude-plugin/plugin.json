@@ -1,7 +1,7 @@
 {
   "name": "yutaura-toolkit",
-  "version": "0.11.0",
-  "description": "yutaura's personal Claude Code toolkit. Bundles skills (tuning / claude-code-rules / repo-kickoff / decision-council / playwright-cli / herdr-agent-message / gh-stack / keepa-price-history / webapp-review / comment-cleanup / terraform-backend / project-manager-mode / review-refine-loop), webapp review agents (db-design / api-design / authn / authz / payment / security / concurrency / performance / audit-trail / sre / legal / marketing), and a pre-commit/push comment-cleanup hook.",
+  "version": "0.12.0",
+  "description": "yutaura's personal Claude Code toolkit. Bundles skills (tuning / claude-code-rules / repo-kickoff / decision-council / playwright-cli / herdr-agent-message / gh-stack / keepa-price-history / webapp-review / comment-cleanup / terraform-backend / project-manager-mode / review-refine-loop), webapp review agents (db-design / api-design / authn / authz / payment / security / concurrency / performance / audit-trail / sre / legal / marketing), a pre-commit/push comment-cleanup hook, and a SessionStart hook that tells Claude to follow existing code when repo docs disagree with it.",
   "author": {
     "name": "yutaura"
   }

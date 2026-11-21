@@ -37,6 +37,7 @@ skills / agents / hooks を含む。今後 commands も必要に応じて追加�
 | Hook | 概要 |
 | --- | --- |
 | `check-comments.sh` (PreToolUse: Bash) | `git commit` / `git push` 実行前に diff の追加コメント行を検出したらブロックし、`comment-cleanup` skill での見直しを促す。ブロックは 1 回のみで、見直し後の再実行は通る |
+| `doc-drift-context.sh` (SessionStart) | CLAUDE.md / AGENTS.md / `.claude/rules/` があるリポジトリでだけ、「文書と既存コードが食い違ったらコードに従い、食い違いを最後に列挙する」という指示を注入する。CLAUDE.md の古い記述に流される問題への対策。軽さを優先して組み込みの `test` だけで判定し、git などは呼ばない |
 
 | Agent | レビュー観点 |
 | --- | --- |
@@ -135,7 +136,7 @@ auto-update を有効にしない場合、または即時反映したい場合:
 │   │   ├── .claude-plugin/
 │   │   │   └── plugin.json
 │   │   ├── agents/                      # webapp-review 用の専門レビュワー群
-│   │   ├── hooks/                       # hooks.json + check-comments.sh
+│   │   ├── hooks/                       # hooks.json + check-comments.sh + doc-drift-context.sh
 │   │   └── skills/
 │   │       ├── claude-code-rules/
 │   │       ├── comment-cleanup/
