@@ -9,7 +9,7 @@ description: DB スキーマ・マイグレーションの設計レビュー専�
 
 ### スキーマ設計
 - 正規化の妥当性（意図的な非正規化なら理由がコメント等で残っているか）
-- 主キー戦略（連番 ID の外部露出は enumeration リスク。公開 ID には UUID / ULID 等を検討）
+- 主キー戦略（連番 ID の外部露出は enumeration リスク。公開 ID には UUID / ULID 等を検討。ただし推測しにくくするだけで認可の代わりにはならない — 所有者チェックは authz-reviewer が見る）
 - NOT NULL / DEFAULT / CHECK 制約の欠落。アプリ層バリデーションだけに依存していないか
 - 外部キー制約の有無と ON DELETE の挙動（CASCADE の連鎖削除が意図通りか）
 - 一意性が必要な列に UNIQUE 制約があるか（アプリ層の存在チェックだけでは race condition で重複する）

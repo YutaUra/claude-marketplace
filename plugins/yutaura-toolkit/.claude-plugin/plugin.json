@@ -1,7 +1,7 @@
 {
   "name": "yutaura-toolkit",
-  "version": "0.13.0",
-  "description": "yutaura's personal Claude Code toolkit. Bundles skills (tuning / claude-code-rules / repo-kickoff / decision-council / playwright-cli / herdr-agent-message / gh-stack / keepa-price-history / webapp-review / comment-cleanup / terraform-backend / project-manager-mode / review-refine-loop / pnpm-best-practices), webapp review agents (db-design / api-design / authn / authz / payment / security / concurrency / performance / audit-trail / sre / legal / marketing), a pre-commit/push comment-cleanup hook, a PreToolUse hook that makes Claude read pnpm-best-practices before a pnpm lockfile or pnpm-workspace.yaml is first written, and a SessionStart hook that tells Claude to follow existing code when repo docs disagree with it.",
+  "version": "0.14.0",
+  "description": "yutaura's personal Claude Code toolkit. Bundles skills (tuning / claude-code-rules / repo-kickoff / decision-council / playwright-cli / herdr-agent-message / gh-stack / keepa-price-history / webapp-review / comment-cleanup / terraform-backend / project-manager-mode / review-refine-loop / pnpm-best-practices), webapp review agents (db-design / api-design / authn / authz / payment / security / client-security / supply-chain / concurrency / performance / audit-trail / sre / legal / marketing), a pre-commit/push comment-cleanup hook, a PreToolUse hook that makes Claude read pnpm-best-practices before a pnpm lockfile or pnpm-workspace.yaml is first written, and a SessionStart hook that tells Claude to follow existing code when repo docs disagree with it.",
   "author": {
     "name": "yutaura"
   }

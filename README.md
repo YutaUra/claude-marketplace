@@ -48,7 +48,9 @@ skills / agents / hooks を含む。今後 commands も必要に応じて追加�
 | `authn-reviewer` | 認証（パスワード・セッション・トークン・OAuth/MFA） |
 | `authz-reviewer` | 認可（IDOR・テナント分離・権限昇格） |
 | `payment-reviewer` | 決済・課金（冪等性・Webhook 署名・金額計算・サブスク） |
-| `security-reviewer` | セキュリティ全般（OWASP Top 10 ベース） |
+| `security-reviewer` | サーバ側セキュリティ（OWASP Top 10:2025 ベース。インジェクション・SSTI・XXE・ファイル・SSRF・CSRF・プロキシ/Host ヘッダ・LLM / Agent 連携） |
+| `client-security-reviewer` | ブラウザ側セキュリティ（DOM XSS・CSP / セキュリティヘッダ・CORS・postMessage・WebSocket・公開 env / source map） |
+| `supply-chain-reviewer` | 依存関係・CI/CD・コンテナ / デプロイ構成（lock・dependency confusion・Actions の権限と固定・Dockerfile） |
 | `concurrency-reviewer` | 並行性・トランザクション・非同期ジョブの整合性 |
 | `performance-reviewer` | N+1・大量データ・キャッシュ・スケーラビリティ |
 | `audit-trail-reviewer` | 監査証跡・履歴設計・台帳方式・イベントソーシング（最軽量手法から段階提案） |
