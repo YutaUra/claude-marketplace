@@ -4,7 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## リポジトリの性質
 
-yutaura 個人用の Claude Code plugin marketplace。ビルド・テスト・lint は存在しない。すべて Markdown / JSON の宣言的ファイルで構成される。
+yutaura 個人用の Claude Code plugin marketplace。ビルド・lint は存在しない。大半は Markdown / JSON の宣言的ファイルだが、一部の skill / hook は実行スクリプトを同梱しており、それらにはテストがある:
+
+- `plugins/yutaura-toolkit/skills/keepa-price-history/scripts/lib/*.test.ts` — `bun test`
+- `plugins/yutaura-toolkit/hooks/*.test.sh` — `bash <ファイル>`
+
+スクリプトを追加・変更したらテストも追加・更新し、該当テストを実行する。
 
 ## アーキテクチャ（2つの配信レーン）
 
@@ -39,7 +44,9 @@ yutaura 個人用の Claude Code plugin marketplace。ビルド・テスト・li
 
 ⚠️ **bump するのは実際に変更した plugin だけ**。両方変更したなら両方 bump する。片方だけの変更でもう片方を bump するのは無意味な再配信になる。
 
-新しい skill を追加したら README.md の該当 plugin の skill 一覧テーブルも更新する。将来 agents / commands / hooks を追加する場合は、対象 plugin のディレクトリ直下に `agents/` `commands/` 等を配置する。
+skill 以外のコンポーネントは対象 plugin のディレクトリ直下に置く（`yutaura-toolkit` には `agents/` と `hooks/` がある。`hooks/hooks.json` に hook を登録する）。commands 等を新設する場合も同様に `commands/` 等を配置する。
+
+skill / agent / hook を追加したら、README.md の該当 plugin の一覧テーブル（Skill / Agent / Hook）も更新する。
 
 ## git ワークフロー
 
