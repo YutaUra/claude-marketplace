@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/doc-drift-context.sh"
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/doc-drift-context.sh\""
           }
         ]
       }
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/check-comments.sh"
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/check-comments.sh\""
           }
         ]
       },
@@ -25,7 +25,20 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/pnpm-best-practices-gate.sh"
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/pnpm-best-practices-gate.sh\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/pr-conflict-watch.sh\"",
+            "asyncRewake": true,
+            "timeout": 43500
           }
         ]
       }

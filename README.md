@@ -39,6 +39,7 @@ skills / agents / hooks を含む。今後 commands も必要に応じて追加�
 | --- | --- |
 | `check-comments.sh` (PreToolUse: Bash) | `git commit` / `git push` 実行前に diff の追加コメント行を検出したらブロックし、`comment-cleanup` skill での見直しを促す。ブロックは 1 回のみで、見直し後の再実行は通る |
 | `pnpm-best-practices-gate.sh` (PreToolUse: Bash / Write / Edit / MultiEdit) | lockfile の無い場所での `pnpm install` / `add` / `import` / `init`（lockfile の新規作成）、`pnpm-workspace.yaml` の作成・編集、pnpm プロジェクトの `.npmrc` 編集の直前に 1 回だけブロックし、`pnpm-best-practices` skill を読んでから再実行させる。`additionalContext` は tool 実行後に届くため使わず、ブロック方式にしている。案内はセッションにつき 1 回 |
+| `pr-conflict-watch.sh` (PostToolUse: Bash, `asyncRewake`) | `gh pr create` / `gh pr edit` / `git push` の後、対象 PR の `mergeable` をバックグラウンドでポーリングし、`CONFLICTING` になったら Claude を起こして知らせる。操作から 5 分以内のコンフリクトは「解消して push せよ」、それ以降に発生したものは「ユーザーに報告せよ」と指示を分ける。PR がクローズ / マージされるか 12 時間で監視を終える。セッション × PR ごとに watcher は 1 つ。monitors ではなく hook にしたのは、monitor には `session_id` が渡らず「このセッションで触った PR」に絞れないため |
 | `doc-drift-context.sh` (SessionStart) | CLAUDE.md / AGENTS.md / `.claude/rules/` があるリポジトリでだけ、「文書と既存コードが食い違ったらコードに従い、食い違いを最後に列挙する」という指示を注入する。CLAUDE.md の古い記述に流される問題への対策。軽さを優先して組み込みの `test` だけで判定し、git などは呼ばない |
 
 | Agent | レビュー観点 |
@@ -140,7 +141,7 @@ auto-update を有効にしない場合、または即時反映したい場合:
 │   │   ├── .claude-plugin/
 │   │   │   └── plugin.json
 │   │   ├── agents/                      # webapp-review 用の専門レビュワー群
-│   │   ├── hooks/                       # hooks.json + check-comments.sh + doc-drift-context.sh + pnpm-best-practices-gate.sh
+│   │   ├── hooks/                       # hooks.json + check-comments.sh + doc-drift-context.sh + pnpm-best-practices-gate.sh + pr-conflict-watch.sh
 │   │   └── skills/
 │   │       ├── claude-code-rules/
 │   │       ├── comment-cleanup/
