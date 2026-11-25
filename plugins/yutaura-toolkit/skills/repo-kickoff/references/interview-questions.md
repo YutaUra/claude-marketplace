@@ -102,6 +102,16 @@
 
 **質問**: 外部サービス・API・有料 SaaS への依存はありますか？
 
+### 3.5 開発環境の再現手段 🟡
+
+**質問**: 依存や環境変数の管理に、既に決まった仕組みはありますか？（無ければ nix flake + direnv + `.env` で用意します）
+
+**深掘り**:
+- `mise.toml` / `.tool-versions` / `devbox.json` / `.devcontainer/` は既にありますか？
+- 秘匿値の配布に 1Password CLI（`op run`）/ SOPS / Doppler などを使っていますか？
+- nix を入れていないメンバーが触る可能性はありますか？（ある場合 `.envrc` は `if has nix; then use flake; fi` で包む）
+- 環境ごとに違う **非秘匿値**（ポート番号、クラウド CLI のプロファイル名など）はありますか？（`.env.example` のキーになる）
+
 ---
 
 ## 視点 4: 品質・運用 (Quality)

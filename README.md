@@ -5,6 +5,15 @@
 
 ## 含まれる plugin
 
+plugin は **2 本**ある。配信は plugin ごとに独立しており、有効化も version bump も別々に行う。
+
+| Plugin | 役割 | 有効化の前提 |
+| --- | --- | --- |
+| `yutaura-toolkit` | 汎用。どのマシンでも動く skills / agents / hooks | なし |
+| `yutaura-private` | nix-darwin の private プロファイルにしか入っていないツールに依存する skills | 該当ツールが PATH にあること |
+
+> `yutaura-private` の "private" は **「private プロファイル専用」** の意味で、機密情報という意味ではない。**このリポジトリは public** なので、どちらの plugin にも秘密情報は置かない。
+
 ### `yutaura-toolkit`
 
 skills / agents / hooks を含む。今後 commands も必要に応じて追加する。
@@ -21,11 +30,16 @@ skills / agents / hooks を含む。今後 commands も必要に応じて追加�
 | `webapp-review` | Web アプリの変更を専門レビュワー agent 群で多角レビュー（diff 分析 → 該当観点のみ並列起動 → 統合レポート） |
 | `comment-cleanup` | diff に追加された無価値なコードコメント（動作をなぞるだけ / 変更説明 / ナレーション等）を commit / push 前に削除。Why not コメント等は保持 |
 | `terraform-backend` | 個人リポジトリ（`YutaUra/*` / `yutaura-dev/*`）で Terraform / OpenTofu の state を共通 S3 バケットに集約する規約。key の組み立て方と、DynamoDB ロックテーブル等のアンチパターン |
-| `project-manager-mode` | ユーザーが product 側、Claude が project manager という分業で働く。調査は読み取り専用サブエージェントに本体ディレクトリで、修正は worktree を切って実装役に委譲。判断は「それ単体で決められる形」に整えて返し、完了時は未実施の検証まで含めた 5 点で報告する |
+| `project-manager-mode` | ユーザーが product 側、Claude が project manager という分業で働く。調査は読み取り専用サブエージェントに本体ディレクトリで、修正は worktree を切って実装役に委譲。件ごとに「決裁が要るか」を判定し、要らないものは全体のまとめを待たず単独で直し、要るものは実装を進めず「それ単体で決められる形」に整えて返す。判断待ちが溜まるときは会話ではなくファイルで非同期にやり取りする。完了時は未実施の検証まで含めた 5 点で報告し、未確認の累積・PR の状態・ブランチの土台といった「自分は知っているが外から見えない状態」を可視化する |
+| `pnpm-best-practices` | pnpm v11 / v12 のベストプラクティス。供給網対策（`minimumReleaseAge` / `trustPolicy` / `strictDepBuilds` + `allowBuilds` / `blockExoticSubdeps`）を最初の install より前に `pnpm-workspace.yaml` に書く、`autoDedupe` / `saveTypes`（v12.6）、設定の置き場所（yaml と `.npmrc` の分担）、lockfile / CI / Docker の運用、廃止済み設定名の回避 |
+| `review-refine-loop` | 成果物（コード変更 / skill / ドキュメント / 設計案 等）を「多角レビュー → MUST/WANT/NIT 分類 → 妥当性検証 → 修正 → 再レビュー」のループで、妥当な指摘が尽きるまで収束させる。発散（最上位モデル）・検証・修正を別モデルに分担し、1 ラウンドにつき各カテゴリ 1 件だけ処理して修正同士の干渉を防ぐ。棄却/保留リストの持ち回り、エージェント失敗と収束の区別、振動検出で「直したつもりで終わる」を防ぐ |
 
 | Hook | 概要 |
 | --- | --- |
 | `check-comments.sh` (PreToolUse: Bash) | `git commit` / `git push` 実行前に diff の追加コメント行を検出したらブロックし、`comment-cleanup` skill での見直しを促す。ブロックは 1 回のみで、見直し後の再実行は通る |
+| `pnpm-best-practices-gate.sh` (PreToolUse: Bash / Write / Edit / MultiEdit) | lockfile の無い場所での `pnpm install` / `add` / `import` / `init`（lockfile の新規作成）、`pnpm-workspace.yaml` の作成・編集、pnpm プロジェクトの `.npmrc` 編集の直前に 1 回だけブロックし、`pnpm-best-practices` skill を読んでから再実行させる。`additionalContext` は tool 実行後に届くため使わず、ブロック方式にしている。案内はセッションにつき 1 回 |
+| `pr-conflict-watch.sh` (PostToolUse: Bash, `asyncRewake`) | `gh pr create` / `gh pr edit` / `git push` の後、対象 PR の `mergeable` をバックグラウンドでポーリングし、`CONFLICTING` になったら Claude を起こして知らせる。操作から 5 分以内のコンフリクトは「解消して push せよ」、それ以降に発生したものは「ユーザーに報告せよ」と指示を分ける。PR がクローズ / マージされるか 12 時間で監視を終える。セッション × PR ごとに watcher は 1 つ。monitors ではなく hook にしたのは、monitor には `session_id` が渡らず「このセッションで触った PR」に絞れないため |
+| `doc-drift-context.sh` (SessionStart) | CLAUDE.md / AGENTS.md / `.claude/rules/` があるリポジトリでだけ、「文書と既存コードが食い違ったらコードに従い、食い違いを最後に列挙する」という指示を注入する。CLAUDE.md の古い記述に流される問題への対策。軽さを優先して組み込みの `test` だけで判定し、git などは呼ばない |
 
 | Agent | レビュー観点 |
 | --- | --- |
@@ -34,13 +48,27 @@ skills / agents / hooks を含む。今後 commands も必要に応じて追加�
 | `authn-reviewer` | 認証（パスワード・セッション・トークン・OAuth/MFA） |
 | `authz-reviewer` | 認可（IDOR・テナント分離・権限昇格） |
 | `payment-reviewer` | 決済・課金（冪等性・Webhook 署名・金額計算・サブスク） |
-| `security-reviewer` | セキュリティ全般（OWASP Top 10 ベース） |
+| `security-reviewer` | サーバ側セキュリティ（OWASP Top 10:2025 ベース。インジェクション・SSTI・XXE・ファイル・SSRF・CSRF・プロキシ/Host ヘッダ・LLM / Agent 連携） |
+| `client-security-reviewer` | ブラウザ側セキュリティ（DOM XSS・CSP / セキュリティヘッダ・CORS・postMessage・WebSocket・公開 env / source map） |
+| `supply-chain-reviewer` | 依存関係・CI/CD・コンテナ / デプロイ構成（lock・dependency confusion・Actions の権限と固定・Dockerfile） |
 | `concurrency-reviewer` | 並行性・トランザクション・非同期ジョブの整合性 |
 | `performance-reviewer` | N+1・大量データ・キャッシュ・スケーラビリティ |
 | `audit-trail-reviewer` | 監査証跡・履歴設計・台帳方式・イベントソーシング（最軽量手法から段階提案） |
 | `sre-reviewer` | 可観測性・障害の局所化・デプロイ安全性 |
 | `legal-reviewer` | 法務（個人情報・特商法・資金決済法・OSS ライセンス）— 要法務確認箇所の検知器 |
 | `marketing-reviewer` | SEO/OGP・計測トラッキング・転換導線 |
+
+### `yutaura-private`
+
+nix-darwin の private プロファイル限定で導入しているツールに依存する skill を置く。
+依存ツールが入っていないマシンでは skill が機能しないため、`yutaura-toolkit` とは分けている。
+
+| Skill | 概要 |
+| --- | --- |
+| `openai-decisions` | OpenAI Decisions API（`openai-decisions/gpt-6-luna`）を `llm` CLI 経由で使い、テキスト / 画像の真偽・分類・段階評価を確率付きで判定する。中心は「chat モデルではなく decisions を選ぶ判断基準」と、確率を閾値運用するときの設計（`refusal` の fail closed / 低 confidence の扱い / 入力と質問の取り違え防止） |
+
+**依存**: `llm` 0.36 + `llm-openai-decisions` 0.1。nix-darwin 側の `pkgs/llm-with-decisions.nix` で自前パッケージ化している。
+site-packages が read-only なため **`llm install` は使えない**（skill 本文に明記済み）。
 
 ## 使い方
 
@@ -57,10 +85,13 @@ skills / agents / hooks を含む。今後 commands も必要に応じて追加�
 ```json
 {
   "enabledPlugins": {
-    "yutaura-toolkit@yutaura-marketplace": true
+    "yutaura-toolkit@yutaura-marketplace": true,
+    "yutaura-private@yutaura-marketplace": true
   }
 }
 ```
+
+`yutaura-private` は依存ツールが入っているマシンでのみ有効化する。
 
 ### Auto-update を有効にする
 
@@ -105,22 +136,30 @@ auto-update を有効にしない場合、または即時反映したい場合:
 ├── .claude-plugin/
 │   └── marketplace.json
 ├── plugins/
-│   └── yutaura-toolkit/
+│   ├── yutaura-toolkit/
+│   │   ├── .claude-plugin/
+│   │   │   └── plugin.json
+│   │   ├── agents/                      # webapp-review 用の専門レビュワー群
+│   │   ├── hooks/                       # hooks.json + check-comments.sh + doc-drift-context.sh + pnpm-best-practices-gate.sh + pr-conflict-watch.sh
+│   │   └── skills/
+│   │       ├── claude-code-rules/
+│   │       ├── comment-cleanup/
+│   │       ├── decision-council/
+│   │       ├── gh-stack/                # github/gh-stack から vendor
+│   │       ├── keepa-price-history/
+│   │       ├── playwright-cli/
+│   │       ├── pnpm-best-practices/
+│   │       ├── project-manager-mode/
+│   │       ├── repo-kickoff/
+│   │       ├── review-refine-loop/
+│   │       ├── terraform-backend/
+│   │       ├── tuning/
+│   │       └── webapp-review/
+│   └── yutaura-private/
 │       ├── .claude-plugin/
 │       │   └── plugin.json
-│       ├── agents/                      # webapp-review 用の専門レビュワー群
-│       ├── hooks/                       # hooks.json + check-comments.sh
 │       └── skills/
-│           ├── claude-code-rules/
-│           ├── comment-cleanup/
-│           ├── decision-council/
-│           ├── gh-stack/                # github/gh-stack から vendor
-│           ├── playwright-cli/
-│           ├── project-manager-mode/
-│           ├── repo-kickoff/
-│           ├── terraform-backend/
-│           ├── tuning/
-│           └── webapp-review/
+│           └── openai-decisions/
 ├── rules/                              # nix-darwin から fetch される
 │   ├── tdd-guidelines.md
 │   └── documentation-principles.md
@@ -129,7 +168,7 @@ auto-update を有効にしない場合、または即時反映したい場合:
         └── herdr-agent-message/
 ```
 
-将来 agents / commands 等を追加する場合は `plugins/yutaura-toolkit/` 直下に
+将来 agents / commands 等を追加する場合は、対象 plugin のディレクトリ直下に
 `agents/` `commands/` `hooks/` `.mcp.json` などを配置する。
 
 ## rules ディレクトリについて
@@ -149,7 +188,13 @@ auto-update を有効にしない場合、または即時反映したい場合:
 ## skill / plugin 更新時の手順
 
 1. 該当ファイル（`SKILL.md` 等）を編集
-2. `plugins/yutaura-toolkit/.claude-plugin/plugin.json` の `version` を bump
-3. commit & push
-4. 利用側は次回起動で自動反映（auto-update 有効時）。手動なら
+2. **変更した plugin の** `plugin.json` の `version` を bump
+   - `plugins/yutaura-toolkit/.claude-plugin/plugin.json`
+   - `plugins/yutaura-private/.claude-plugin/plugin.json`
+
+   両方の plugin を変更したなら**両方** bump する。片方だけ編集したときに
+   もう片方を bump する必要はない（配信は plugin ごとに独立）
+3. 新しい skill を追加したら、該当 plugin の skill 一覧テーブルを更新
+4. commit & push
+5. 利用側は次回起動で自動反映（auto-update 有効時）。手動なら
    `/plugin marketplace update yutaura-marketplace` → `/reload-plugins`

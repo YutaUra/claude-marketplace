@@ -8,6 +8,11 @@
       "name": "yutaura-toolkit",
       "source": "./plugins/yutaura-toolkit",
       "description": "yutaura's personal Claude Code toolkit (skills, and optionally agents / commands / hooks)."
+    },
+    {
+      "name": "yutaura-private",
+      "source": "./plugins/yutaura-private",
+      "description": "yutaura's private-profile Claude Code plugin. Skills that depend on tooling only installed in the nix-darwin private profile."
     }
   ]
 }
