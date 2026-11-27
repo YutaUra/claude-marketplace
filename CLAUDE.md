@@ -18,6 +18,8 @@ yutaura 個人用の Claude Code plugin marketplace。ビルド・lint は存在
 1. **plugin レーン**: `plugins/<plugin 名>/` — Claude Code の marketplace 機能（`.claude-plugin/marketplace.json` → `plugin.json` → `skills/`）で配信される。auto-update または `/plugin marketplace update yutaura-marketplace` で利用側に反映。
 2. **rules レーン**: `rules/*.md` — plugin の公式配信対象外のため、nix-darwin（`pkgs/yutaura-rules.nix` の `fetchFromGitHub`）が別途取得して `~/.claude/rules/` に配置する。反映は `nix flake update` → `darwin-rebuild switch` で、plugin とは更新タイミングが独立。
 
+役目を終えた skill / agent は削除せず `archive/` へ移す。`archive/` は marketplace の読み取り対象外なので配信は止まるが、調査で得た知見は参照可能なまま残る。移すときは配信側の記述（`plugin.json` の description / README の skill 表とツリー）から除き、`archive/README.md` の表に経緯を 1 行追加する。
+
 ## plugin は 2 本ある（配信は plugin ごとに独立）
 
 | Plugin | 役割 | 置いてよい skill の条件 |

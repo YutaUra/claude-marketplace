@@ -8,6 +8,15 @@ description: >
   SendMessage）には使わない。
 ---
 
+> **⚠️ この skill は archive 済み（配信対象外）**
+>
+> 本文中の「SendMessage は同一セッション内の subagent 専用で、別 pane には届かない」は
+> **現在は誤り**。Claude Code 公式の `ListAgents` / `SendMessage` が同一マシンの他ローカル
+> セッションを名前で直接アドレッシングできる。既存セッションへのメッセージングはそちらを使うこと。
+>
+> herdr CLI が依然必要なのは、セッションの**起動**（`herdr agent start`）、pane の focus / attach、
+> 中断（`send-keys ctrl+c`）など、メッセージング以外の pane 操作に限られる。
+
 # herdr Agent Messaging
 
 別の workspace / pane で動いている **独立した Claude Code セッション** に作業を依頼し、返信を受け取るための skill。herdr には Claude Code 専用ツールが無いため、すべて **Bash から `herdr` CLI を叩く** 運用になる。
