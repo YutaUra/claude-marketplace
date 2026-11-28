@@ -61,6 +61,17 @@ assert "Poll の後は直前の REPL の分と重なるので何も出力しな�
 out=$(run "$tmp/user" "$tmp/proj-none" PostToolUse REPL)
 assert "REPL の後は言語を言い直す" '[[ "$(field "$out" additionalContext)" == *"日本語"* ]]'
 
+out=$(run "$tmp/user" "$tmp/proj-none" PostToolUse)
+assert "language が日本語なら指示文を日本語で書き、最終報告も名指しする" '[[ "$(field "$out" additionalContext)" == *"最終報告"* ]] && [[ "$(field "$out" additionalContext)" != *"Reminder"* ]]'
+
+mkdir -p "$tmp/user-en-name"
+printf '{"language": "Japanese"}' > "$tmp/user-en-name/settings.json"
+out=$(run "$tmp/user-en-name" "$tmp/proj-none" PostToolUse)
+assert "language が英語表記の Japanese でも日本語の指示文にする" '[[ "$(field "$out" additionalContext)" == *"最終報告"* ]]'
+
+out=$(run "$tmp/user" "$tmp/proj" PostToolUse)
+assert "日本語以外の言語では英語の指示文で最終報告も名指しする" '[[ "$(field "$out" additionalContext)" == *"Deutsch"* ]] && [[ "$(field "$out" additionalContext)" == *"final report"* ]]'
+
 mkdir -p "$tmp/evil"
 printf 'import pathlib\npathlib.Path(%s).touch()\n' "'$tmp/pwned'" > "$tmp/evil/json.py"
 (cd "$tmp/evil" && run "$tmp/user" "$tmp/evil" PostToolUse >/dev/null)
