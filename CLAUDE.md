@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 yutaura 個人用の Claude Code plugin marketplace。ビルド・lint は存在しない。大半は Markdown / JSON の宣言的ファイルだが、一部の skill / hook は実行スクリプトを同梱しており、それらにはテストがある:
 
 - `plugins/yutaura-toolkit/skills/keepa-price-history/scripts/lib/*.test.ts` — `bun test`
+- `plugins/yutaura-toolkit/skills/eval-driven-tuning/scripts/lib/*.test.ts` — `bun test`
 - `plugins/yutaura-toolkit/hooks/*.test.sh` — `bash <ファイル>`
 
 スクリプトを追加・変更したらテストも追加・更新し、該当テストを実行する。
