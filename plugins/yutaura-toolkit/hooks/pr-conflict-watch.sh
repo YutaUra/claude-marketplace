@@ -11,7 +11,8 @@ case "$input" in
   *) exit 0 ;;
 esac
 
-parsed=$(printf '%s' "$input" | python3 -c '
+# -I: cwd（clone した任意のリポジトリ）の json.py 等で任意コードを実行させないため
+parsed=$(printf '%s' "$input" | python3 -I -c '
 import json, re, sys
 d = json.load(sys.stdin)
 ti = d.get("tool_input") or {}

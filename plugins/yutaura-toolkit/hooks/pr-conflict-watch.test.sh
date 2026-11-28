@@ -54,7 +54,7 @@ new_session() { seq=$((seq + 1)); session="s$seq"; : > "$FAKE_GH_LOG"; }
 run_hook() {
   local cmd="$1" stdout="${2:-}"
   local input
-  input=$(python3 -c '
+  input=$(python3 -I -c '
 import json, sys
 print(json.dumps({"session_id": sys.argv[1], "cwd": sys.argv[2], "tool_name": "Bash",
                   "tool_input": {"command": sys.argv[3]},
@@ -124,6 +124,12 @@ assert "以前の監視プロセスが終了済みなら新たに監視する" '
 new_session; states "OPEN UNKNOWN" "" "OPEN CONFLICTING"
 run_hook "git push" ""
 assert "gh の一時的な失敗があっても監視を続ける" '[ $code -eq 2 ]'
+
+new_session; states "MERGED UNKNOWN"
+mkdir -p "$tmp/evil"
+printf 'import pathlib\npathlib.Path(%s).touch()\n' "'$tmp/pwned'" > "$tmp/evil/json.py"
+(cd "$tmp/evil" && run_hook "git push" "")
+assert "カレントディレクトリに置かれた json.py を import しない" '[ ! -e "$tmp/pwned" ]'
 
 out=$(printf 'git push but not json' | bash "$hook" 2>&1); code=$?
 assert "入力が壊れていても失敗せず素通しする" '[ $code -eq 0 ]'

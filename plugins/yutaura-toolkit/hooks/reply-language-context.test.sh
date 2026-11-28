@@ -55,4 +55,9 @@ printf '{not json' > "$tmp/broken/settings.json"
 out=$(run "$tmp/broken" "$tmp/proj-none" PostToolUse); code=$?
 assert "settings が壊れていても失敗せず何も出力しない" '[ $code -eq 0 ] && [ -z "$out" ]'
 
+mkdir -p "$tmp/evil"
+printf 'import pathlib\npathlib.Path(%s).touch()\n' "'$tmp/pwned'" > "$tmp/evil/json.py"
+(cd "$tmp/evil" && run "$tmp/user" "$tmp/evil" PostToolUse >/dev/null)
+assert "カレントディレクトリに置かれた json.py を import しない" '[ ! -e "$tmp/pwned" ]'
+
 exit $fail

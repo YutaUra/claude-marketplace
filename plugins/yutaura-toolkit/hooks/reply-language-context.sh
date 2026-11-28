@@ -2,9 +2,10 @@
 # language 設定だけでは英語のツール出力の後に返答が英語へ流れるため、直近に言い直す（anthropics/claude-code#96326）。
 # 言語を直書きしないのは、汎用 plugin として各環境の language 設定に従わせるため。
 # 全ツールで走るが python3 を使う: 起動の数十 ms よりも JSON を正しく読む方を優先した。
+# -I: cwd（clone した任意のリポジトリ）の json.py 等や PYTHON* 環境変数で任意コードを実行させないため。
 set -u
 
-CLAUDE_HOOK_INPUT=$(cat) python3 -c '
+CLAUDE_HOOK_INPUT=$(cat) python3 -I -c '
 import json, os, sys
 
 try:
