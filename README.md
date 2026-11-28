@@ -33,6 +33,7 @@ skills / agents / hooks を含む。今後 commands も必要に応じて追加�
 | `project-manager-mode` | ユーザーが product 側、Claude が project manager という分業で働く。調査は読み取り専用サブエージェントに本体ディレクトリで、修正は worktree を切って実装役に委譲。件ごとに「決裁が要るか」を判定し、要らないものは全体のまとめを待たず単独で直し、要るものは実装を進めず「それ単体で決められる形」に整えて返す。判断待ちが溜まるときは会話ではなくファイルで非同期にやり取りする。完了時は未実施の検証まで含めた 5 点で報告し、未確認の累積・PR の状態・ブランチの土台といった「自分は知っているが外から見えない状態」を可視化する |
 | `pnpm-best-practices` | pnpm v11 / v12 のベストプラクティス。供給網対策（`minimumReleaseAge` / `trustPolicy` / `strictDepBuilds` + `allowBuilds` / `blockExoticSubdeps`）を最初の install より前に `pnpm-workspace.yaml` に書く、`autoDedupe` / `saveTypes`（v12.6）、設定の置き場所（yaml と `.npmrc` の分担）、lockfile / CI / Docker の運用、廃止済み設定名の回避 |
 | `wireframe` | ローファイ・ワイヤーフレームを作る。決めたい問いから成果物（breadboard / thumbnail ボード / 1 画面 / wireflow）を選び、PC・モバイルの作法（実寸・親指の届く範囲・幅ごとのナビの入れ物）で描く。構造の違う案を出し、注釈で「なぜ」を残す。出力は既定で単一 HTML、必要に応じて Storybook / ASCII / SVG の reference を読み込む |
+| `ux-design` | UX 設計・UX レビュー。「誰が、どの状況で、何を達成したいか」から出発し、クリック数ではなく interaction cost（読む・探す・覚える・入力する・待つの合計）でフローを比べる。外れた道（エラー・取り消し・待ち・空/権限なし/オフライン）、文言、アクセシビリティ、ダークパターンまで決める。レビューは目標の確定 → 証拠ごとに主張を限定 → cognitive walkthrough → 候補の検証と統合 → 重大度順・件数上限つきで返し、却下した候補と未検証も明記する。3 クリックルール・7±2 などの俗説を根拠にしない。画面の配置は wireframe に渡す |
 | `review-refine-loop` | 成果物（コード変更 / skill / ドキュメント / 設計案 等）を「多角レビュー → MUST/WANT/NIT 分類 → 妥当性検証 → 修正 → 再レビュー」のループで、妥当な指摘が尽きるまで収束させる。発散（最上位モデル）・検証・修正を別モデルに分担し、1 ラウンドにつき各カテゴリ 1 件だけ処理して修正同士の干渉を防ぐ。棄却/保留リストの持ち回り、エージェント失敗と収束の区別、振動検出で「直したつもりで終わる」を防ぐ |
 
 | Hook | 概要 |
@@ -156,6 +157,7 @@ auto-update を有効にしない場合、または即時反映したい場合:
 │   │       ├── review-refine-loop/
 │   │       ├── terraform-backend/
 │   │       ├── tuning/
+│   │       ├── ux-design/
 │   │       ├── webapp-review/
 │   │       └── wireframe/
 │   └── yutaura-private/
