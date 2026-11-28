@@ -9,9 +9,14 @@ CLAUDE_HOOK_INPUT=$(cat) python3 -I -c '
 import json, os, sys
 
 try:
-    event = json.loads(os.environ.get("CLAUDE_HOOK_INPUT") or "{}").get("hook_event_name") or "PostToolUse"
+    hook_input = json.loads(os.environ.get("CLAUDE_HOOK_INPUT") or "{}")
 except ValueError:
-    event = "PostToolUse"
+    hook_input = {}
+event = hook_input.get("hook_event_name") or "PostToolUse"
+
+# Poll は REPL の結果を受け取るだけで、直前の同じ位置に REPL の分がすでに入っている
+if hook_input.get("tool_name") == "Poll":
+    sys.exit(0)
 
 project = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
 config = os.environ.get("CLAUDE_CONFIG_DIR") or os.path.expanduser("~/.claude")

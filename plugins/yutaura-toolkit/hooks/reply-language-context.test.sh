@@ -12,7 +12,7 @@ tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 
 run() {
-  printf '{"hook_event_name":"%s","tool_name":"Bash"}' "$3" |
+  printf '{"hook_event_name":"%s","tool_name":"%s"}' "$3" "${4:-Bash}" |
     CLAUDE_CONFIG_DIR="$1" CLAUDE_PROJECT_DIR="$2" bash "$hook"
 }
 
@@ -54,6 +54,12 @@ mkdir -p "$tmp/broken"
 printf '{not json' > "$tmp/broken/settings.json"
 out=$(run "$tmp/broken" "$tmp/proj-none" PostToolUse); code=$?
 assert "settings が壊れていても失敗せず何も出力しない" '[ $code -eq 0 ] && [ -z "$out" ]'
+
+out=$(run "$tmp/user" "$tmp/proj-none" PostToolUse Poll); code=$?
+assert "Poll の後は直前の REPL の分と重なるので何も出力しない" '[ $code -eq 0 ] && [ -z "$out" ]'
+
+out=$(run "$tmp/user" "$tmp/proj-none" PostToolUse REPL)
+assert "REPL の後は言語を言い直す" '[[ "$(field "$out" additionalContext)" == *"日本語"* ]]'
 
 mkdir -p "$tmp/evil"
 printf 'import pathlib\npathlib.Path(%s).touch()\n' "'$tmp/pwned'" > "$tmp/evil/json.py"
